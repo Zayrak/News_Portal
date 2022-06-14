@@ -1,0 +1,23 @@
+{% extends 'flatpages/default.html' %}
+
+{% load custom_tags %}
+{% load custom_filters %}
+
+{% block title %}
+New
+{% endblock title %}
+
+{% block content %}
+<h1>{{ new }}</h1>
+   <h3>{% current_time '%d %b %Y' %}</h3>
+   <hr>
+    {% if new %}
+           <p>
+                <p> Название: {{new.title | censor}}</p>
+                <p> Название: {{new.text | censor}}</p>
+                <p> Автор: {{new.author.authorUser}}</p>
+                <p> Дата публикации: {{new.dateCreation}}</p>
+{% else %}
+        <h2> Новость или статья отсутствует! </h2>
+    {% endif %}
+{% endblock content %}
