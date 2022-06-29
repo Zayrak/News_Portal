@@ -1,13 +1,12 @@
 from datetime import datetime
-
-from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.http.response import HttpResponseRedirect
-
-from .forms import PostForm
+from .forms import PostForm, UserForm
 from .models import Post
 from .filter import PostFilter
+from django.shortcuts import render
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 
 
 class PostsList(ListView):
@@ -74,6 +73,34 @@ class PostsDelete(DeleteView):
     model = Post
     template_name = 'post_delete.html'
     success_url = reverse_lazy('news')
+
+
+class ProfileUpdateView(LoginRequiredMixin, UpdateView):
+    template_name = 'profile_update.html'
+    form_class = UserForm
+    success_url = '/news/'
+    login_url = '/login/'
+    redirect_field_name = 'redirect_to'
+
+    def get_object(self, **kwargs):
+        return self.request.user
+
+
+class AddPost(PermissionRequiredMixin, CreateView):
+    permission_required = ('news.add_post', )
+    form_class = PostForm
+    model = Post
+    template_name = 'news_edit.html'
+    context_object_name = 'post'
+
+
+
+class ChangePost(PermissionRequiredMixin, UpdateView):
+    permission_required = ('news.change_post', )
+    form_class = PostForm
+    model = Post
+    template_name = 'news_edit.html'
+    context_object_name = 'post'
 
 
 def create_post(request):

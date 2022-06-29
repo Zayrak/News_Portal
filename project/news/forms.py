@@ -1,12 +1,17 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.forms import ModelForm
+from .models import User
 
 from .models import Post
+
+
 class PostForm(forms.ModelForm):
     description = forms.CharField(min_length=20)
+
     class Meta:
-       model = Post
-       fields = ['author', 'title', 'text', 'Category_Type', 'postCategory']
+        model = Post
+        fields = ['author', 'title', 'text', 'Category_Type', 'postCategory']
 
     def clean(self):
         cleaned_data = super().clean()
@@ -23,3 +28,19 @@ class PostForm(forms.ModelForm):
             )
 
         return cleaned_data
+
+
+class UserForm(ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email']
+
+        def clean(self):
+            cleaned_data = super().clean()
+            description = cleaned_data.get("description")
+            if description is not None and len(description) < 20:
+                raise ValidationError({
+                    "description": "Описание не может быть менее 20 символов."
+                })
+
+            return cleaned_data
