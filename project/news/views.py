@@ -150,7 +150,7 @@ def subscribe_to_category(request, pk):
         )
         msg = EmailMultiAlternatives(
             subject=f'На {cat} категорию подписаны',
-            from_email='Zayrac7@yandex.ru',
+            from_email='*******@yandex.ru',
             to=[user.email, ],
         )
 

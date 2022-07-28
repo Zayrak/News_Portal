@@ -17,7 +17,7 @@ def send_emails(post_object, *args, **kwargs):
     print(f'category: {kwargs["category_object"]}')
     msg = EmailMultiAlternatives(
         subject=kwargs['email_subject'],
-        from_email='Zayrac7@yandex.ru',
+        from_email='*******@yandex.ru',
         to=kwargs['user_emails']
     )
     msg.attach_alternative(html, 'text/html')
