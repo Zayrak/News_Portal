@@ -1,54 +1,119 @@
 {% extends 'flatpages/default.html' %}
 
-{% load custom_tags %}
-{% load custom_filters %}
-
 {% block title %}
 News
 {% endblock title %}
+{% load custom_tags %}
+{% load custom_filters %}
 
 {% block content %}
-<h1> Все новости и статьи</h1>
-   <h3>{% current_time '%d %b %Y' %}</h3>
+<style>
+    .news {
+        display: inline-block;
+        margin: 0 10px 10px 0; /* Отступы */
+        padding: 10px 0; /* Поля сверху и снизу */
+        width: 30%; /* Ширина */
+        vertical-align: top; /* Выравнивание по верхнему краю */
+        }
+    .str {
+        display: block;
+        text-align: left;
+        }
+    .grey {
+        color: grey;
+        text-align: left;
+        }
+    A {
+        text-decoration: none; /* Убирает подчеркивание для ссылок */
+        color: black;
+        }
+    A:hover {
+        text-decoration: underline; /* Добавляем подчеркивание при наведении курсора на ссылку */
+        color: grey;
+        }
+</style>
+<small class="str"> Сегодня: {% current_time '%b %d %Y' %}</small>
+<small class="str"> Всего новостей ({{filter.qs|length}})</small>
 
-   <hr>
-    {% if news %}
-    <h4>Количество записей: {{ news | length }} </h4>
-        <table style="margin-left: auto; margin-right: auto;">
-           <tr>
-           <tr>
-               <td style="text-align: center;"> Название</td>
-               <td style="text-align: center;">Дата</td>
-               <td style="text-align: center;">Текст</td>
-           </tr>
-            {% for new in news %}
-            <tr>
-                <td style="text-align: center;"> {{new.title | censor}}</td>
-                <td style="text-align: center;"> {{new.dateCreation|date:'d M Y'}}</td>
-                <td style="text-align: center;"> {{new.text | censor | truncatechars:21}}</td>
-            </tr>
-            {% endfor %}
-       </table>
-    {% else %}
-        <h2> Новостей и статей нет! </h2>
+<h3> The news: <span> {{ news|length }} </span> </h3>
+
+<table>
+    <td>|</td>
+    <td><a href="{% url 'new_create' %}"> Добавить новость </a><br></td>
+    <td>|</td>
+    <td><a href="{% url 'article_create' %}"> Добавить статью </a><br></td>
+    <td>|</td>
+    <td><a href="{% url 'search' %}"> Поиск поста </a><br></td>
+    <td>|</td>
+</table>
+
+<hr>
+{% if news %}
+    {% for new in news %}
+        <div class="news">
+            <strong class="str">
+                <a href="{% url 'new' new.id %}"> {{ new.title|censor }} </a>
+            </strong>
+
+            <div class="str">
+                <small>
+                    {{ new.get_type_display }} -
+                    {% for category in new.category.all %}
+                            {{ category }}
+                    {% endfor %}
+                </small>
+            </div>
+
+            <div class="str">
+                <small>
+                    {{ new.author.username }} - {{ new.date|date:'d/m/Y' }}
+                </small>
+            </div>
+            <p>
+            <div class="grey">
+                {{ new.text|truncatechars:50 }}
+            </div>
+            <p>
+            <div class="str">
+            <sub>
+                {% if new.type == 'NEWS' %}
+                    <a href="{% url 'new_update' new.id %}"><u> Редактировать </u></a>
+                    |
+                    <a href="{% url 'new_delete' new.id %}"><u> Удалить </u></a>
+                {% else %}
+                    <a href="{% url 'article_update' new.id %}"><u> Редактировать </u></a>
+                    |
+                    <a href="{% url 'article_delete' new.id %}"><u> Удалить </u></a>
+                {% endif %}
+            </sub>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <h2>НОВОСТЕЙ НЕТ!</h2>
+{% endif %}
+
+<div>
+    {% if is_paginated %}
+        {% if page_obj.has_previous %}
+            <a href="?{% url_replace page=1 %}">1</a>
+            {% if page_obj.previous_page_number != 1 %}
+                <a href="?{% url_replace page=page_obj.previous_page_number %}"><<<</a>
+                ...
+                <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
+            {% endif %}
+        {% endif %}
+
+        {{ page_obj.number }}
+        {% if page_obj.has_next %}
+            <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
+            {% if paginator.num_pages != page_obj.next_page_number %}
+                ...
+                <a href="?{% url_replace page=page_obj.next_page_number %}">>>></a>
+                <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
+            {% endif %}
+        {% endif %}
     {% endif %}
-   {% if page_obj.has_previous %}
-       <a href="?{% url_replace page=1 %}">1</a>
-       {% if page_obj.previous_page_number != 1 %}
-           ...
-           <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
-       {% endif %}
-   {% endif %}
-
-   {{ page_obj.number }}
-
-   {% if page_obj.has_next %}
-       <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
-       {% if paginator.num_pages != page_obj.next_page_number %}
-           ...
-           <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
-       {% endif %}
-   {% endif %}
+</div>
 
 {% endblock content %}
-

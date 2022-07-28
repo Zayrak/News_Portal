@@ -1,12 +1,13 @@
 <html>
     <head>
-        <title> Simple SignUp/SignIn app</title>
+        <title> Страница новостей вход для пользователей </title>
     </head>
     <body>
         <div>
-            <h1><a href="/">Simple SignUp/SignIn app</a></h1>
+            <h1><a href="/">Login</a></h1>
         </div>
         {% block content %}
         {% endblock %}
     </body>
+<a href="{% url 'news_list' %}">Вернуться к блоку новостей</a>
 </html>

@@ -1,46 +1,33 @@
-from django import forms
-from django.core.exceptions import ValidationError
 from django.forms import ModelForm
-from .models import User
+from .models import Post, User
+from django.core.exceptions import ValidationError
+from django import forms
 
-from .models import Post
 
-
-class PostForm(forms.ModelForm):
-    description = forms.CharField(min_length=20)
+class PostForm(ModelForm):
 
     class Meta:
         model = Post
-        fields = ['author', 'title', 'text', 'Category_Type', 'postCategory']
+        fields = ['title', 'text', 'author', 'category']
+        widgets = {
+            'author': forms.Select(attrs={'class': 'form-control pure-input-1-2'}),
+            'category': forms.SelectMultiple(attrs={'class': 'form-control pure-input-1-2'}),
+            'title': forms.TextInput(attrs={'class': 'form-control pure-input-1-2', 'placeholder': 'Post Title'}),
+            'text': forms.Textarea(attrs={'class': 'form-control pure-input-1-2'}),
+        }
 
     def clean(self):
         cleaned_data = super().clean()
-        description = cleaned_data.get("description")
-        if description is not None and len(description) < 20:
+        text = cleaned_data.get("text")
+        if text is not None and len(text) < 20:
             raise ValidationError({
-                "description": "Описание не может быть менее 20 символов."
+                "text": "Статья не может быть менее 20 символов."
             })
-
-        name = cleaned_data.get("name")
-        if name == description:
-            raise ValidationError(
-                "Описание не должно быть идентично названию."
-            )
 
         return cleaned_data
 
 
-class UserForm(ModelForm):
+class AuthorForm(ModelForm):
     class Meta:
         model = User
-        fields = ['username', 'email']
-
-        def clean(self):
-            cleaned_data = super().clean()
-            description = cleaned_data.get("description")
-            if description is not None and len(description) < 20:
-                raise ValidationError({
-                    "description": "Описание не может быть менее 20 символов."
-                })
-
-            return cleaned_data
+        fields = '__all__'

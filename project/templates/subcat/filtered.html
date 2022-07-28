@@ -1,12 +1,13 @@
 {% extends 'flatpages/default.html' %}
 
 {% block title %}
-Новости и статьи
+Новости
 {% endblock title %}
 {% load custom_tags %}
 {% load custom_filters %}
 
 {% block content %}
+
 
 <style>
     .news {
@@ -41,32 +42,26 @@
     .top { border-top:1px solid grey;}
 </style>
 
-<h4>Найдено новостей {{filter.qs|length}} по запросу: </h4>
-<table>
-    <div class="new2">
-        <form method="GET">
-            {{ filter.form }}
-            <table>
-                <td></td>
-                <p></p>
-                <td><input type="submit" value="Найти"></td>
-            </table>
-        </form>
-    </div>
-</table>
+<h4>
+    Найдено новостей {{filter.qs|length}} по запросу:
+    <span> {{ name }} </span>
+</h4>
 
-<p>
-  {{filter.type}}
-</p>
-<p>
-  {{filter.qs.type}}
-</p>
-
-{% if filter == null %}
-    <h2>НОВОСТЕЙ НЕТ!</h2>
-{% else %}
+{% if name.id %}
+<div class="new2">
+  <strong>
+    Подписаться на
+    <em> {{ name }} </em>?
+  </strong>
+  <a href="{% url 'subscr_category' name.id %}">
+    <button>
+      Подписаться
+    </button>
+  </a>
+</div>
+{% endif %}
 <table>
-    {% for new in posts %}
+    {% for new in news %}
     <tr>
         <td class="top">
             <div class="news">
@@ -114,7 +109,6 @@
     </tr>
     {% endfor %}
 </table>
-{% endif %}
 
 <div>
 

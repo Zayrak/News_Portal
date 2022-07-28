@@ -1,114 +1,180 @@
-from datetime import datetime
-from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from django.http.response import HttpResponseRedirect
-from .forms import PostForm, UserForm
-from .models import Post
-from .filter import PostFilter
-from django.shortcuts import render
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.views.generic import (
+                                    ListView, DetailView,
+                                    CreateView, UpdateView, DeleteView,
+                                  )
+from .models import (
+                        Post,
+                        Category,
+                        CatSub,
+                     )
+
+from .filters import PostFilter
+from .forms import (
+                    PostForm,
+                    AuthorForm,
+                    )
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import redirect
+from django.urls import resolve
+from django.contrib.auth.decorators import login_required
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
 
 
-class PostsList(ListView):
+class NewsList(ListView):
     model = Post
-    ordering = 'title'
     template_name = 'news.html'
     context_object_name = 'news'
-    ordering = '-dateCreation'
-    paginate_by = 10
+    ordering = ['-date']
+    paginate_by = 9
+    form_class = PostForm
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        self.filterset = PostFilter(self.request.GET, queryset)
-        return self.filterset.qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['time_now'] = datetime.utcnow()
-        context['next_sale'] = None
-        context['filterset'] = self.filterset
+        context['filter'] = PostFilter(self.request.GET,
+                                       queryset=super().get_queryset())
         return context
 
 
-class PostsDetail(DetailView):
+class PostView(DetailView):
     model = Post
     template_name = 'new.html'
     context_object_name = 'new'
 
 
-class NewsSearch(ListView):
-    model = Post
-    ordering = 'title'
+class PostSearch(ListView):
     template_name = 'search.html'
-    context_object_name = 'news'
-    ordering = '-dateCreation'
-    paginate_by = 10
+    context_object_name = 'posts'
+    queryset = Post.objects.all()
+    paginate_by = 6
+    ordering = ['-date']
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filter'] = PostFilter(self.request.GET, queryset=super().get_queryset())
+        context['categories'] = Category.objects.all()
+        context['form'] = PostForm
+        return context
 
     def get_queryset(self):
         queryset = super().get_queryset()
         self.filterset = PostFilter(self.request.GET, queryset)
         return self.filterset.qs
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['time_now'] = datetime.utcnow()
-        context['next_sale'] = None
-        context['filterset'] = self.filterset
-        return context
+
+class PostCreateView(LoginRequiredMixin, CreateView):
+    template_name = 'new_create.html'
+    form_class = PostForm #
+
+    def form_valid(self, form):
+        post = form.save(commit=False)
+        post.type = 'NW'
+        validated = super().form_valid(form)
+        return validated
 
 
-class NewsCreate(CreateView):
+class PostUpdateView(LoginRequiredMixin, UpdateView):
+    template_name = 'new_create.html'
     form_class = PostForm
-    model = Post
-    template_name = 'news_edit.html'
+
+    def get_object(self, **kwargs):
+        id = self.kwargs.get('pk')
+        post = Post.objects.get(pk=id)
+        post.isUpdated = True
+        return post
 
 
-class PostsUpdate(UpdateView):
-    form_class = PostForm
-    model = Post
-    template_name = 'news_edit.html'
-
-
-class PostsDelete(DeleteView):
-    model = Post
-    template_name = 'post_delete.html'
-    success_url = reverse_lazy('news')
-
-
-class ProfileUpdateView(LoginRequiredMixin, UpdateView):
-    template_name = 'profile_update.html'
-    form_class = UserForm
+class PostDeleteView(LoginRequiredMixin, DeleteView):
     success_url = '/news/'
-    login_url = '/login/'
-    redirect_field_name = 'redirect_to'
+    template_name = 'new_delete.html'
+
+    def get_object(self, **kwargs):
+        id = self.kwargs.get('pk')
+        return Post.objects.get(pk=id)
+
+
+class ArticleCreateView(LoginRequiredMixin, CreateView):
+    template_name = 'new_create.html'
+    form_class = PostForm
+    model = Post
+
+    def form_valid(self, form):
+        post = form.save(commit=False)
+        post.type = 'AR'
+        validated = super().form_valid(form)
+
+        return validated
+
+
+class UserUpdateView(LoginRequiredMixin, UpdateView):
+    template_name = 'author_update.html'
+    form_class = AuthorForm
 
     def get_object(self, **kwargs):
         return self.request.user
 
 
-class AddPost(PermissionRequiredMixin, CreateView):
-    permission_required = ('news.add_post', )
-    form_class = PostForm
+class PostCategory(ListView):
     model = Post
-    template_name = 'news_edit.html'
-    context_object_name = 'post'
+    ordering = ['-date']
+    template_name = 'subcat/filtered.html'
+    context_object_name = 'news'
+    paginate_by = 6
 
 
+    def get_queryset(self):
+        self.id = resolve(self.request.path_info).kwargs['pk']
+        queryset = Post.objects.filter(category=Category.objects.get(id=self.id))
+        return queryset
 
-class ChangePost(PermissionRequiredMixin, UpdateView):
-    permission_required = ('news.change_post', )
-    form_class = PostForm
-    model = Post
-    template_name = 'news_edit.html'
-    context_object_name = 'post'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filter'] = PostFilter(
+            self.request.GET, queryset=self.get_queryset())
+        context['name'] = Category.objects.get(id=self.id)
+        return context
 
 
-def create_post(request):
-    if request.method == 'POST':
-        form = PostForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect('/news/')
+@login_required
+def subscribe_to_category(request, pk):
+    user = request.user
+    cat = Category.objects.get(id=pk)
 
-    form = PostForm
-    return render(request, 'news_edit.html', {'form': form})
+    if not cat.subscribers.filter(id=user.id).exists():
+        cat.subscribers.add(user)
+        html = render_to_string(
+            'subcat/subscribed.html',
+            {'categories': cat, 'user': user},
+
+        )
+        msg = EmailMultiAlternatives(
+            subject=f'На {cat} категорию подписаны',
+            from_email='Zayrac7@yandex.ru',
+            to=[user.email, ],
+        )
+
+        msg.attach_alternative(html, 'text/html')
+        try:
+            msg.send()
+        except Exception as e:
+            print(e)
+        return redirect('profile')
+    return redirect(request.META.get('HTTP_REFERER'))
+
+
+@login_required
+def unsubscribe_from_category(request, pk):
+    user = request.user
+    cat = Category.objects.get(id=pk)
+
+    if cat.subscribers.filter(id=user.id).exists():
+        cat.subscribers.remove(user)
+    return redirect('profile')
+
+
+class ProfileView(ListView):
+    model = CatSub
+    template_name = 'profile.html'
+    context_object_name = 'categories'
+

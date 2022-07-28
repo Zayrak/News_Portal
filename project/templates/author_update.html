@@ -1,11 +1,16 @@
 {% extends 'flatpages/default.html' %}
+{% load custom_filters %}
 
-{% block title %}Profile update{% endblock title %}
+{% block title %}
+News
+{% endblock title %}
 
 {% block content %}
+
 <form method="POST">
     {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="Обновить профиль">
+    {{ form.as_p }}
+    <input type="submit" value="Change">
 </form>
+
 {% endblock content %}
