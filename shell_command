@@ -60,3 +60,10 @@
 ...     i.rating
 ...     i.text
 
+import redis
+
+red = redis.Redis(
+    host='redis-11838.c92.us-east-1-3.ec2.cloud.redislabs.com',
+    port='11838',
+    password='IXAtBWskxDWs7F13ziXzyUbH8ylafRY2'
+)

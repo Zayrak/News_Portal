@@ -150,7 +150,7 @@ def subscribe_to_category(request, pk):
         )
         msg = EmailMultiAlternatives(
             subject=f'На {cat} категорию подписаны',
-            from_email='*******@yandex.ru',
+            from_email='Zayrac7@yandex.ru',
             to=[user.email, ],
         )
 
@@ -177,4 +177,3 @@ class ProfileView(ListView):
     model = CatSub
     template_name = 'profile.html'
     context_object_name = 'categories'
-

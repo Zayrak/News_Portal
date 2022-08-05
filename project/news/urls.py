@@ -9,7 +9,6 @@ urlpatterns = [
 
     path('', NewsList.as_view(), name='news_list'),
     path('<int:pk>', PostView.as_view(), name='new'),
-    # D4
     path('search/', PostSearch.as_view(), name='search'),
     path('search/<int:pk>', PostView.as_view(), name='new_search'),
     path('new/create/', PostCreateView.as_view(), name='new_create'),
@@ -22,4 +21,5 @@ urlpatterns = [
     path('subscribe/<int:pk>', subscribe_to_category, name='subscr_category'),
     path('unsubscribe/<int:pk>', unsubscribe_from_category, name='unsubscr_category'),
     path('profile/', ProfileView.as_view(), name='profile'),
+
 ]

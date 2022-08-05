@@ -162,8 +162,8 @@ ACCOUNT_FORMS = {'signup': 'sign.models.BasicSignupForm'}
 
 EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_PORT = 465
-EMAIL_HOST_USER = '*******@yandex.ru'
-EMAIL_HOST_PASSWORD = '*****'
+EMAIL_HOST_USER = 'Zayrac7@yandex.ru'
+EMAIL_HOST_PASSWORD = '******'
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
@@ -173,3 +173,12 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
 
 APSCHEDULER_RUN_NOW_TIMEOUT = 30
+
+CELERY_BROKER_URL = 'redis://localhost:6379'
+#CELERY_BROKER_URL = 'redis-11838.c92.us-east-1-3.ec2.cloud.redislabs.com:11838'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+#CELERY_RESULT_BACKEND = 'redis-11838.c92.us-east-1-3.ec2.cloud.redislabs.com:11838'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_ACKS_LATE = True
+CELERY_TASK_SERIALIZER = 'json'
