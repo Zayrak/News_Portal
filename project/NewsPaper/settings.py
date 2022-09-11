@@ -10,10 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
 
 # Build paths inside the NewsPaper like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -64,6 +65,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
+
+    'django.middleware.locale.LocaleMiddleware',
+
 ]
 
 ROOT_URLCONF = 'NewsPaper.urls'
@@ -182,3 +186,122 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_ACKS_LATE = True
 CELERY_TASK_SERIALIZER = 'json'
+
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(BASE_DIR, 'cache_files'),
+        'TIMEOUT': 30,
+    }
+}
+
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale')
+]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'formatters': {
+        'console1': {
+            'format': '{asctime} - {levelname} - {message} - {pathname} - {exc_info}',
+            'style': '{'
+        },
+        'console2': {
+            'format': '{asctime} - {levelname} - {message} - {pathname}',
+            'style': '{'
+        },
+        'console3': {
+            'format': '{asctime} - {levelname} - {message}',
+            'style': '{'
+        },
+        'general': {
+            'format': '{asctime} - {levelname} - {module} - {message}',
+            'style': '{'
+        },
+
+    },
+
+    'handlers': {
+        'console1': {
+            'level': 'ERROR',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'console1'
+        },
+        'console2': {
+            'level': 'WARNING',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'console2'
+        },
+        'console3': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'console3'
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter': 'console1'
+        },
+        'general': {
+            'level': 'INFO',
+            'filters': ['require_debug_false'],
+            'class': 'logging.FileHandler',
+            'filename': 'general.log',
+            'formatter': 'general'
+        },
+        'errors': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': 'errors.log',
+            'formatter': 'console1'
+        },
+        'security': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'security.log',
+            'formatter': 'general'
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console1', 'console2', 'console3', ],
+            'level': 'INFO',
+        },
+        'django.request': {
+            'handlers': ['errors', 'mail_admins'],
+            'level': 'ERROR',
+        },
+        'django.server': {
+            'handlers': ['errors', 'mail_admins'],
+            'level': 'ERROR',
+        },
+        'django.template': {
+            'handlers': ['errors'],
+            'level': 'ERROR',
+        },
+        'django.db_backends': {
+            'handlers': ['errors'],
+            'level': 'ERROR',
+        },
+        'django.security': {
+            'handlers': ['security'],
+            'level': 'ERROR',
+        }
+
+    }
+}

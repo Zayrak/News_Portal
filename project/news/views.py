@@ -19,6 +19,7 @@ from django.urls import resolve
 from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
+from django.views.decorators.cache import cache_page
 
 
 class NewsList(ListView):
@@ -177,3 +178,7 @@ class ProfileView(ListView):
     model = CatSub
     template_name = 'profile.html'
     context_object_name = 'categories'
+
+@cache_page(60 * 5)
+def my_view(request):
+    ...
